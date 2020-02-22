@@ -8,10 +8,12 @@ import com.plapp.greenhouseservice.repositories.PlantRepository;
 import com.plapp.greenhouseservice.repositories.StoryboardItemRepository;
 import com.plapp.greenhouseservice.repositories.StoryboardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/greenhouse")
@@ -33,12 +35,13 @@ public class GreenhouseController {
 
     @GetMapping("/plants")
     public List<Plant> getPlants(@RequestParam long userId) {
-        return null;
+        return plantRepository.findByOwner(userId);
     }
 
     @GetMapping("/plant")
     public Plant getPlant(@RequestParam long plantId) {
-        return null;
+        Optional<Plant> plant = plantRepository.findById(plantId);
+        return plant.orElse(null);
     }
 
     @PostMapping("/plant/add")
@@ -47,9 +50,21 @@ public class GreenhouseController {
         return new ApiResponse();
     }
 
-    @PostMapping("/plant/remove")
-    public ApiResponse removePlant(@RequestBody Plant plant) {
-        return null;
+    @GetMapping("/plant/remove")
+    public ApiResponse removePlant(@RequestParam long plantId) {
+        Optional<Plant> plant = plantRepository.findById(plantId);
+
+        if (!plant.isPresent())
+            return new ApiResponse(false, "Plant does not exist");
+
+        Storyboard storyboard = storyboardRepository.findByPlant(plant.get());
+        if (storyboard != null) {
+            storyboardRepository.delete(storyboard);
+        }
+
+        plantRepository.delete(plant.get());
+
+        return new ApiResponse();
     }
 
     @GetMapping("/storyboards")
@@ -59,42 +74,34 @@ public class GreenhouseController {
 
     @GetMapping("/storyboard")
     public Storyboard getStoryboard(@RequestParam long plantId) {
-        return null;
+        Optional<Plant> plant = plantRepository.findById(plantId);
+        if (!plant.isPresent())
+            return null;
+
+        return storyboardRepository.findByPlant(plant.get());
     }
 
     @PostMapping("/storyboard/create")
-    public ApiResponse createStoryboard() {
-        Storyboard storyboard = new Storyboard();
-        storyboard.setPlant(plantRepository.findAll().get(0));
-        storyboard.setSummary("This is a summary");
-        storyboard.setNumLikes(69);
-
-        StoryboardItem item = new StoryboardItem();
-        item.setTitle("First item");
-        item.setDescription("Description of first item");
-        item.setStatus(Plant.PlantHealthStatus.HEALTHY);
-
-        StoryboardItem item2 = new StoryboardItem();
-        item2.setTitle("Second item");
-        item2.setDescription("Description of second item");
-        item2.setStatus(Plant.PlantHealthStatus.SICK);
-
-        List<StoryboardItem> items = new ArrayList<>();
-        items.add(item);
-        items.add(item2);
-        storyboard.setStoryboardItems(items);
-        storyboardRepository.save(storyboard);
-
+    public ApiResponse createStoryboard(@RequestBody Storyboard storyboard) {
+        if (storyboardRepository.save(storyboard) == null)
+            return new ApiResponse(false, "Could not create storyboard");
         return new ApiResponse();
     }
 
     @PostMapping("/storyboard/update")
     public ApiResponse updateStoryboard(@RequestBody Storyboard storyboard) {
-        return null;
+        if (!storyboardRepository.existsById(storyboard.getId()))
+            return new ApiResponse(false, "Storyboard does not exist");
+
+        return this.createStoryboard(storyboard);
     }
 
     @GetMapping("/storyboard/remove")
-    public ApiResponse removeStoryboard(@RequestBody Storyboard storyboard) {
-        return null;
+    @Transactional
+    public ApiResponse removeStoryboard(@RequestParam long storyboardId) {
+        if (!storyboardRepository.existsById(storyboardId))
+            return new ApiResponse(false, "Storyboard does not exist");
+        storyboardRepository.deleteById(storyboardId);
+        return new ApiResponse();
     }
 }

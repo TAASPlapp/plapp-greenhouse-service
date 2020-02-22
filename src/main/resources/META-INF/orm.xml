@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm" version="2.0">
+    <entity class="com.plapp.entities.greenhouse.Plant" name="Plant">
+        <attributes>
+            <id name="id">
+                <generated-value />
+            </id>
+        </attributes>
+    </entity>
+
+    <entity class="com.plapp.entities.greenhouse.Storyboard" name="Storyboard">
+        <attributes>
+            <id name="id">
+                <generated-value/>
+            </id>
+
+            <one-to-many name="storyboardItems">
+                <cascade>
+                    <cascade-persist/>
+                    <cascade-merge/>
+                </cascade>
+            </one-to-many>
+
+            <one-to-one name="plant">
+                <cascade>
+                    <cascade-persist/>
+                    <cascade-merge/>
+                </cascade>
+            </one-to-one>
+
+        </attributes>
+    </entity>
+
+    <entity class="com.plapp.entities.greenhouse.StoryboardItem" name="StoryboardItem">
+        <attributes>
+            <id name="id">
+                <generated-value/>
+            </id>
+        </attributes>
+    </entity>
+</entity-mappings>

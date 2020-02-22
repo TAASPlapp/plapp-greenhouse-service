@@ -1,0 +1,21 @@
+version: "3"
+
+networks:
+  auth-network:
+
+services:
+  plapp-greenhouse-db:
+    image: postgres:latest
+    container_name: plapp-greenhouse-db
+    ports:
+      - "5433:5432"
+    env_file:
+      - postgres.env
+    volumes:
+      - database-data:/var/lib/postgresql/data
+    networks:
+      - auth-network
+
+volumes:
+  database-data:
+

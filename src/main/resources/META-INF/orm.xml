@@ -14,16 +14,17 @@
                 <generated-value/>
             </id>
 
-            <one-to-many name="storyboardItems">
+            <one-to-many name="storyboardItems" orphan-removal="true">
                 <cascade>
-                    <cascade-persist/>
-                    <cascade-merge/>
+                    <cascade-persist />
+                    <cascade-merge />
+                    <cascade-remove />
                 </cascade>
             </one-to-many>
 
             <one-to-one name="plant">
                 <cascade>
-                    <cascade-persist/>
+                    <!--cascade-persist/-->
                     <cascade-merge/>
                 </cascade>
             </one-to-one>

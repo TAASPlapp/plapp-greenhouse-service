@@ -7,6 +7,7 @@ import com.plapp.entities.utils.ApiResponse;
 import com.plapp.greenhouseservice.repositories.PlantRepository;
 import com.plapp.greenhouseservice.repositories.StoryboardItemRepository;
 import com.plapp.greenhouseservice.repositories.StoryboardRepository;
+import org.hibernate.HibernateException;
 import org.lists.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,8 +35,8 @@ public class GreenhouseController {
     }
 
 
-    @GetMapping("/plants")
-    public List<Plant> getPlants(@RequestParam long userId) {
+    @GetMapping("/{userId}/plants")
+    public List<Plant> getPlants(@PathVariable(value="userId") long userId) {
         return plantRepository.findByOwner(userId);
     }
 
@@ -47,9 +48,12 @@ public class GreenhouseController {
 
     @PostMapping("/plant/add")
     public ApiResponse addPlant(@RequestBody Plant plant) {
-        plant.setId(-1);
-        if(plantRepository.save(plant).getId() == -1)
-            return new ApiResponse(false, "Could not create entity");
+        try {
+            plantRepository.save(plant);
+        } catch (HibernateException e) {
+            return new ApiResponse(false, "Could not create entity: " + e.getMessage());
+        }
+
         return new ApiResponse();
     }
 
@@ -84,9 +88,12 @@ public class GreenhouseController {
 
     @PostMapping("/storyboard/create")
     public ApiResponse createStoryboard(@RequestBody Storyboard storyboard) {
-        storyboard.setId(-1);
-        if (storyboardRepository.save(storyboard).getId() == -1)
-            return new ApiResponse(false, "Could not create storyboard");
+        try {
+            storyboardRepository.save(storyboard);
+        } catch (HibernateException e) {
+            return new ApiResponse(false, "Could not create storyboard: " + e.getMessage());
+        }
+
         return new ApiResponse();
     }
 

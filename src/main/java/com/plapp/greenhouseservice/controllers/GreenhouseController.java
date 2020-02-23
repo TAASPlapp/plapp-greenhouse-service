@@ -39,8 +39,8 @@ public class GreenhouseController {
         return plantRepository.findByOwner(userId);
     }
 
-    @GetMapping("/plant")
-    public Plant getPlant(@RequestParam long plantId) {
+    @GetMapping("/plant/{plantId}")
+    public Plant getPlant(@PathVariable(value="plantId") long plantId) {
         Optional<Plant> plant = plantRepository.findById(plantId);
         return plant.orElse(null);
     }
@@ -51,8 +51,8 @@ public class GreenhouseController {
         return new ApiResponse();
     }
 
-    @GetMapping("/plant/remove")
-    public ApiResponse removePlant(@RequestParam long plantId) {
+    @GetMapping("/plant/{plantId}/remove")
+    public ApiResponse removePlant(@PathVariable(value="plantId") long plantId) {
         Optional<Plant> plant = plantRepository.findById(plantId);
 
         if (!plant.isPresent())
@@ -68,18 +68,16 @@ public class GreenhouseController {
         return new ApiResponse();
     }
 
+    @GetMapping("/plant/{plantId}/storyboard")
+    public Storyboard getStoryboard(@PathVariable(value="plantId") long plantId) {
+        Optional<Plant> plant = plantRepository.findById(plantId);
+        return plant.map(value -> storyboardRepository.findByPlant(value)).orElse(null);
+
+    }
+
     @GetMapping("/storyboards")
     public List<Storyboard> getStoryboards() {
         return storyboardRepository.findAll();
-    }
-
-    @GetMapping("/storyboard")
-    public Storyboard getStoryboard(@RequestParam long plantId) {
-        Optional<Plant> plant = plantRepository.findById(plantId);
-        if (!plant.isPresent())
-            return null;
-
-        return storyboardRepository.findByPlant(plant.get());
     }
 
     @PostMapping("/storyboard/create")
@@ -97,9 +95,9 @@ public class GreenhouseController {
         return this.createStoryboard(storyboard);
     }
 
-    @GetMapping("/storyboard/remove")
+    @GetMapping("/storyboard/{storyboardId}/remove")
     @Transactional
-    public ApiResponse removeStoryboard(@RequestParam long storyboardId) {
+    public ApiResponse removeStoryboard(@PathVariable(value="storyboardId") long storyboardId) {
         if (!storyboardRepository.existsById(storyboardId))
             return new ApiResponse(false, "Storyboard does not exist");
         storyboardRepository.deleteById(storyboardId);

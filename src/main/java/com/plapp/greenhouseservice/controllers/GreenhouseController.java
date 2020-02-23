@@ -47,7 +47,9 @@ public class GreenhouseController {
 
     @PostMapping("/plant/add")
     public ApiResponse addPlant(@RequestBody Plant plant) {
-        plantRepository.save(plant);
+        plant.setId(-1);
+        if(plantRepository.save(plant).getId() == -1)
+            return new ApiResponse(false, "Could not create entity");
         return new ApiResponse();
     }
 

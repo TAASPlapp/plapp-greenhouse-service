@@ -54,6 +54,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.github.carloalbertobarbano</groupId>
+            <artifactId>JListsUtils</artifactId>
+            <version>4335e11fda</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>

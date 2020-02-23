@@ -82,7 +82,8 @@ public class GreenhouseController {
 
     @PostMapping("/storyboard/create")
     public ApiResponse createStoryboard(@RequestBody Storyboard storyboard) {
-        if (storyboardRepository.save(storyboard) == null)
+        storyboard.setId(-1);
+        if (storyboardRepository.save(storyboard).getId() == -1)
             return new ApiResponse(false, "Could not create storyboard");
         return new ApiResponse();
     }

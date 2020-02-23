@@ -7,6 +7,7 @@ import com.plapp.entities.utils.ApiResponse;
 import com.plapp.greenhouseservice.repositories.PlantRepository;
 import com.plapp.greenhouseservice.repositories.StoryboardItemRepository;
 import com.plapp.greenhouseservice.repositories.StoryboardRepository;
+import org.lists.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -103,5 +104,47 @@ public class GreenhouseController {
             return new ApiResponse(false, "Storyboard does not exist");
         storyboardRepository.deleteById(storyboardId);
         return new ApiResponse();
+    }
+
+    @PostMapping("/storyboard/{storyboardId}/item/add")
+    public ApiResponse addStoryboardItem(@PathVariable(value="storyboardId") long storyboardId,
+                                         @RequestBody StoryboardItem storyboardItem) {
+        Optional<Storyboard> optStoryboard = storyboardRepository.findById(storyboardId);
+        if (!optStoryboard.isPresent())
+            return new ApiResponse(false, "Storyboard does not exist");
+
+        Storyboard storyboard = optStoryboard.get();
+
+        List<StoryboardItem> items = storyboard.getStoryboardItems();
+        if (items == null || items.size() < 1)
+            items = new ArrayList<>();
+        items.add(storyboardItem);
+
+        storyboard.setStoryboardItems(items);
+
+        return this.createStoryboard(storyboard);
+    }
+
+    @GetMapping("/storyboard/{storyboardId}/item/{itemId}/remove")
+    public ApiResponse removeStoryboardItem(@PathVariable(value="storyboardId") long storyboardId,
+                                            @PathVariable(value="itemId") long itemId) {
+        Optional<Storyboard> optStoryboard = storyboardRepository.findById(storyboardId);
+        if (!optStoryboard.isPresent())
+            return new ApiResponse(false, "Storyboard does not exist");
+
+        Storyboard storyboard = optStoryboard.get();
+
+        List<StoryboardItem> items = storyboard.getStoryboardItems();
+        if (items == null || items.size() < 1)
+            return new ApiResponse(false, "Storyboard does not have any item");
+
+        List<StoryboardItem> matching = Lists.filter(items, i -> i.getId() == itemId);
+        if (matching.size() < 1)
+            return new ApiResponse(false, "Storyboard does not contain specified item");
+
+        items.remove(matching.get(0));
+        storyboard.setStoryboardItems(items);
+
+        return this.createStoryboard(storyboard);
     }
 }

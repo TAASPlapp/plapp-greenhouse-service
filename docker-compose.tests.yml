@@ -1,0 +1,27 @@
+version: "3"
+
+networks:
+  auth-network:
+
+services:
+  plapp-greenhouse-test-db:
+    image: postgres:latest
+    container_name: plapp-greenhouse-test-db
+    ports:
+      - "5433:5432"
+    env_file:
+      - postgres.env
+    networks:
+      - auth-network
+
+  plapp-greenhouse-test:
+    image: maven:latest
+    stop_signal: SIGKILL
+    stdin_open: true
+    working_dir: $PWD
+    volumes:
+    - $PWD:$PWD
+    - /var/run/docker.sock:/var/run/docker.sock
+    command: mvn test
+
+

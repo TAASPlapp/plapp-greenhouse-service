@@ -28,8 +28,9 @@ public class PlantServiceTest {
 
     private PlantService plantService;
 
-    private Plant getMockPlant() {
+    public static Plant getMockPlant() {
         Plant plant = new Plant();
+        plant.setId(0);
         plant.setName("test-name");
         plant.setImage("test-image");
         plant.setType("type");

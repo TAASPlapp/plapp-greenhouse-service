@@ -22,6 +22,7 @@ public class StoryboardService {
 
     public Storyboard getStoryboardByPlantId(long plantId) {
         Plant plant = plantRepository.findById(plantId).orElse(null);
+        System.out.println("plant is: " + plant);
         return storyboardRepository.findByPlant(plant);
     }
 

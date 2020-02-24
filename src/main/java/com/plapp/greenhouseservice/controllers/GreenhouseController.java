@@ -47,7 +47,7 @@ public class GreenhouseController {
             return new ApiResponse(false, "Could not create entity: " + e.getMessage());
         }
 
-        return new ApiResponse();
+        return new ApiResponse(true, "Plant created successfully");
     }
 
     @GetMapping("/plant/{plantId}/remove")
@@ -60,7 +60,7 @@ public class GreenhouseController {
             return new ApiResponse(false, "Could not remove plant: " + e.getMessage());
         }
 
-        return new ApiResponse();
+        return new ApiResponse(true, "Plant removed");
     }
 
     @GetMapping("/plant/{plantId}/storyboard")

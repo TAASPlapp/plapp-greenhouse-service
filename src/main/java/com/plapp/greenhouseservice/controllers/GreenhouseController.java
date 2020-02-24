@@ -5,20 +5,14 @@ import com.plapp.entities.greenhouse.Plant;
 import com.plapp.entities.greenhouse.Storyboard;
 import com.plapp.entities.greenhouse.StoryboardItem;
 import com.plapp.entities.utils.ApiResponse;
-import com.plapp.greenhouseservice.repositories.PlantRepository;
-import com.plapp.greenhouseservice.repositories.StoryboardItemRepository;
-import com.plapp.greenhouseservice.repositories.StoryboardRepository;
 import com.plapp.greenhouseservice.services.PlantService;
 import com.plapp.greenhouseservice.services.StoryboardService;
 import org.hibernate.HibernateException;
-import org.lists.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/greenhouse")

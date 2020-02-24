@@ -4,13 +4,11 @@ import com.plapp.entities.exceptions.ActorNotFoundException;
 import com.plapp.entities.greenhouse.Plant;
 import com.plapp.entities.greenhouse.Storyboard;
 import com.plapp.entities.greenhouse.StoryboardItem;
-import com.plapp.entities.utils.ApiResponse;
 import com.plapp.greenhouseservice.repositories.PlantRepository;
 import com.plapp.greenhouseservice.repositories.StoryboardRepository;
 import org.hibernate.HibernateException;
 import org.lists.utils.Lists;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 import java.util.List;

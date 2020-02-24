@@ -5,21 +5,19 @@ import com.plapp.entities.greenhouse.Plant;
 import com.plapp.entities.greenhouse.Storyboard;
 import com.plapp.greenhouseservice.repositories.PlantRepository;
 import com.plapp.greenhouseservice.repositories.StoryboardRepository;
+import lombok.RequiredArgsConstructor;
 import org.hibernate.HibernateException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PlantService {
+
     private final PlantRepository plantRepository;
     private final StoryboardRepository storyboardRepository;
 
-    public PlantService(PlantRepository plantRepository,
-                        StoryboardRepository storyboardRepository) {
-        this.plantRepository = plantRepository;
-        this.storyboardRepository = storyboardRepository;
-    }
 
     public List<Plant> findByOwner(long userId) {
         return plantRepository.findByOwner(userId);

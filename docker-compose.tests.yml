@@ -14,5 +14,14 @@ services:
     networks:
       - auth-network
 
+  plapp-greenhouse-test:
+    image: maven:latest
+    stop_signal: SIGKILL
+    stdin_open: true
+    working_dir: $PWD
+    volumes:
+    - $PWD:$PWD
+    - /var/run/docker.sock:/var/run/docker.sock
+    command: mvn test
 
 

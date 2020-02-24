@@ -6,6 +6,7 @@ import com.plapp.entities.greenhouse.Storyboard;
 import com.plapp.entities.greenhouse.StoryboardItem;
 import com.plapp.greenhouseservice.repositories.PlantRepository;
 import com.plapp.greenhouseservice.repositories.StoryboardRepository;
+import lombok.RequiredArgsConstructor;
 import org.hibernate.HibernateException;
 import org.lists.utils.Lists;
 import org.springframework.stereotype.Service;
@@ -14,15 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class StoryboardService {
     private final StoryboardRepository storyboardRepository;
     private final PlantRepository plantRepository;
-
-    public StoryboardService(StoryboardRepository storyboardRepository,
-                             PlantRepository plantRepository) {
-        this.storyboardRepository = storyboardRepository;
-        this.plantRepository = plantRepository;
-    }
 
     public Storyboard getStoryboardByPlantId(long plantId) {
         Plant plant = plantRepository.findById(plantId).orElse(null);
@@ -37,10 +33,11 @@ public class StoryboardService {
         return storyboardRepository.save(storyboard);
     }
 
+    //TODO: should we interpret no items as "leave as is"?
     public Storyboard updateStoryboard(Storyboard storyboard) throws HibernateException,
                                                                      ActorNotFoundException {
         if (!storyboardRepository.existsById(storyboard.getId()))
-            throw new ActorNotFoundException("Storyboard does not exists");
+            throw new ActorNotFoundException("Storyboard does not exist");
 
         return this.createStoryboard(storyboard);
     }
@@ -52,6 +49,7 @@ public class StoryboardService {
         storyboardRepository.deleteById(storyboardId);
     }
 
+    //TODO: is this useful? ..duplicate of updateStoryboard
     public Storyboard addStoryboardItem(long storyboardId, StoryboardItem item) throws HibernateException,
                                                                                          ActorNotFoundException {
         Storyboard storyboard = storyboardRepository.findById(storyboardId).orElse(null);

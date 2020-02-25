@@ -8,7 +8,7 @@
         </attributes>
     </entity>
 
-    <entity class="com.plapp.entities.greenhouse.Storyboard" name="Storyboard">
+    <!--entity class="com.plapp.entities.greenhouse.Storyboard" name="Storyboard">
         <attributes>
             <id name="id">
                 <generated-value/>
@@ -24,7 +24,6 @@
 
             <one-to-one name="plant">
                 <cascade>
-                    <!--cascade-persist/-->
                     <cascade-merge/>
                 </cascade>
             </one-to-one>
@@ -32,11 +31,15 @@
         </attributes>
     </entity>
 
-    <entity class="com.plapp.entities.greenhouse.StoryboardItem" name="StoryboardItem">
+    <entity class="com.plapp.greenhouseservice.entities.StoryboardItemDPO" name="StoryboardItem">
         <attributes>
             <id name="id">
                 <generated-value/>
             </id>
+            
+            <many-to-one name="storyboard">
+                <join-column name="storyboard_id"></join-column>
+            </many-to-one>
         </attributes>
-    </entity>
+    </entity-->
 </entity-mappings>

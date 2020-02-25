@@ -3,6 +3,7 @@ package com.plapp.greenhouseservice.services;
 import com.plapp.entities.exceptions.ActorNotFoundException;
 import com.plapp.entities.greenhouse.Plant;
 import com.plapp.entities.greenhouse.Storyboard;
+import com.plapp.greenhouseservice.entities.StoryboardDPO;
 import com.plapp.greenhouseservice.repositories.PlantRepository;
 import com.plapp.greenhouseservice.repositories.StoryboardRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,10 +38,16 @@ public class PlantService {
         if (plant == null)
             throw new ActorNotFoundException("Plant does not exist");
 
-        Storyboard storyboard = storyboardRepository.findByPlant(plant);
+        StoryboardDPO storyboard = storyboardRepository.findByPlant(plant);
         if (storyboard != null)
             storyboardRepository.deleteById(storyboard.getId());
 
         plantRepository.delete(plant);
+    }
+
+    public StoryboardDPO getStoryboardByPlantId(long plantId) {
+        Plant plant = plantRepository.findById(plantId).orElse(null);
+        System.out.println("plant is: " + plant);
+        return storyboardRepository.findByPlant(plant);
     }
 }

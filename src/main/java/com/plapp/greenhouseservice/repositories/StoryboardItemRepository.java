@@ -1,8 +1,10 @@
 package com.plapp.greenhouseservice.repositories;
 
-import com.plapp.entities.greenhouse.StoryboardItem;
+import com.plapp.greenhouseservice.entities.StoryboardItemDPO;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface StoryboardItemRepository extends JpaRepository<StoryboardItem, Integer> {
+import java.util.Optional;
 
+public interface StoryboardItemRepository extends JpaRepository<StoryboardItemDPO, Integer> {
+    Optional<StoryboardItemDPO> findById(long id);
 }

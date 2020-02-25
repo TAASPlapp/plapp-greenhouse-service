@@ -1,11 +1,11 @@
 package com.plapp.greenhouseservice;
 import com.plapp.entities.exceptions.ActorNotFoundException;
 import com.plapp.entities.greenhouse.Plant;
-import com.plapp.entities.greenhouse.Storyboard;
-import com.plapp.entities.greenhouse.StoryboardItem;
+import com.plapp.greenhouseservice.entities.StoryboardDPO;
+import com.plapp.greenhouseservice.entities.StoryboardItemDPO;
 import com.plapp.greenhouseservice.repositories.PlantRepository;
 import com.plapp.greenhouseservice.repositories.StoryboardRepository;
-import com.plapp.greenhouseservice.services.PlantService;
+import com.plapp.greenhouseservice.services.StoryboardItemService;
 import com.plapp.greenhouseservice.services.StoryboardService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,27 +29,29 @@ public class StoryboardServiceTest {
     @Mock
     private StoryboardRepository storyboardRepository;
 
+    @Mock
+    private StoryboardItemService storyboardItemService;
 
     private StoryboardService storyboardService;
 
     @BeforeEach
     void initTest() {
-        storyboardService = new StoryboardService(storyboardRepository, plantRepository);
+        storyboardService = new StoryboardService(storyboardRepository);
     }
 
     @Test
     void testCreateStoryboard() {
-        Storyboard storyboard = new Storyboard();
+        StoryboardDPO storyboard = new StoryboardDPO();
         storyboard.setPlant(new Plant());
         storyboard.setSummary("summary");
-        storyboard.setNumLikes(42);
 
-        when(storyboardRepository.save(any(Storyboard.class))).then(returnsFirstArg());
-        Storyboard savedStoryboard = storyboardService.createStoryboard(storyboard);
+        when(storyboardRepository.save(any(StoryboardDPO.class))).then(returnsFirstArg());
 
-        assertThat(savedStoryboard.getSummary()).isEqualTo(storyboard.getSummary());
-        assertThat(savedStoryboard.getNumLikes()).isEqualTo(storyboard.getNumLikes());
-        // ...
+        assertDoesNotThrow(() -> {
+            StoryboardDPO savedStoryboard = storyboardService.createStoryboard(storyboard);
+            assertThat(savedStoryboard.getSummary()).isEqualTo(storyboard.getSummary());
+            // ...
+        });
     }
 
     @Test
@@ -62,32 +64,31 @@ public class StoryboardServiceTest {
 
     @Test
     void testUpdate_ExistingStoryboard() {
-        Storyboard storyboard = new Storyboard();
+        StoryboardDPO storyboard = new StoryboardDPO();
         storyboard.setPlant(new Plant());
         storyboard.setSummary("summary");
-        storyboard.setNumLikes(42);
 
-        when(storyboardRepository.save(any(Storyboard.class))).then(returnsFirstArg());
-        Storyboard savedStoryboard = storyboardService.createStoryboard(storyboard);
-        when(storyboardRepository.existsById(savedStoryboard.getId())).thenReturn(true);
+        when(storyboardRepository.save(any(StoryboardDPO.class))).then(returnsFirstArg());
+        StoryboardDPO savedStoryboard = storyboardService.createStoryboard(storyboard);
+
+        //when(storyboardRepository.existsById(savedStoryboard.getId())).thenReturn(true);
         assertNull(savedStoryboard.getStoryboardItems());
 
-        List<StoryboardItem> items = new ArrayList<>();
-        StoryboardItem item = new StoryboardItem(
-                -1,
-                "image",
-                "thumb",
-                "description",
-                "title",
-                Plant.PlantHealthStatus.HEALTHY,
-                69
-        );
+        List<StoryboardItemDPO> items = new ArrayList<>();
+        StoryboardItemDPO item = new StoryboardItemDPO();
+        item.setId(-1);
+        item.setStoryboard(savedStoryboard);
+        item.setImage("image");
+        item.setThumbImage("thumb");
+        item.setDescription("description");
+        item.setTitle("title");
+        item.setStatus(Plant.PlantHealthStatus.HEALTHY);
+
         items.add(item);
         savedStoryboard.setStoryboardItems(items);
 
         assertDoesNotThrow(() -> {
-            Storyboard updatedStoryboard = storyboardService.updateStoryboard(savedStoryboard);
-            assertThat(updatedStoryboard.getStoryboardItems().get(0).getNumLikes()).isEqualTo(item.getNumLikes());
+            StoryboardDPO updatedStoryboard = storyboardService.createStoryboard(savedStoryboard);
             assertThat(updatedStoryboard.getStoryboardItems().get(0).getDescription()).isEqualTo(item.getDescription());
             assertThat(updatedStoryboard.getStoryboardItems().get(0).getStatus()).isEqualTo(item.getStatus());
         });

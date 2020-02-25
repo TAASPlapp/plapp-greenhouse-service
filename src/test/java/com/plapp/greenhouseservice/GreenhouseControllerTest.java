@@ -1,12 +1,14 @@
 package com.plapp.greenhouseservice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.plapp.entities.exceptions.ActorNotFoundException;
 import com.plapp.entities.greenhouse.Plant;
 import com.plapp.entities.greenhouse.Storyboard;
 import com.plapp.entities.greenhouse.StoryboardItem;
 import com.plapp.entities.utils.ApiResponse;
 import com.plapp.greenhouseservice.controllers.GreenhouseController;
 import com.plapp.greenhouseservice.entities.StoryboardDPO;
+import com.plapp.greenhouseservice.entities.StoryboardItemDPO;
 import com.plapp.greenhouseservice.services.PlantService;
 import com.plapp.greenhouseservice.services.StoryboardItemService;
 import com.plapp.greenhouseservice.services.StoryboardService;
@@ -166,6 +168,32 @@ class GreenhouseControllerTest {
     }
 
     @Test
+    void removePlant_notFound_returnsApiResponse() throws Exception {
+        doThrow(new ActorNotFoundException("not found")).when(plantService).removePlant(any(Long.class));
+
+        long plantId = ((Double)(Math.PI*100)).longValue(); //lol
+        MvcResult mvcResult = mockMvc.perform(get("/greenhouse/plant/{plantId}/remove", plantId))
+                .andExpect(status().isOk())
+                .andReturn();
+        ApiResponse expectedResponse = new ApiResponse(false, "not found");
+        String actualResponse = mvcResult.getResponse().getContentAsString();
+        assertThat(objectMapper.writeValueAsString(expectedResponse)).isEqualToIgnoringWhitespace(actualResponse);
+    }
+
+    @Test
+    void removePlant_throwsException_returnsApiResponse() throws Exception {
+        doThrow(new HibernateException("hibernate exception")).when(plantService).removePlant(any(Long.class));
+
+        long plantId = ((Double)(Math.PI*100)).longValue(); //lol
+        MvcResult mvcResult = mockMvc.perform(get("/greenhouse/plant/{plantId}/remove", plantId))
+                .andExpect(status().isOk())
+                .andReturn();
+        ApiResponse expectedResponse = new ApiResponse(false, "Could not remove plant: hibernate exception");
+        String actualResponse = mvcResult.getResponse().getContentAsString();
+        assertThat(objectMapper.writeValueAsString(expectedResponse)).isEqualToIgnoringWhitespace(actualResponse);
+    }
+
+    @Test
     void removePlant_invalidInput() throws Exception {
         mockMvc.perform(get("/greenhouse/plant/plantId/remove"))
                 .andExpect(status().isBadRequest());
@@ -311,49 +339,237 @@ class GreenhouseControllerTest {
     // updateStoryboard
     @Test
     void updateStoryboard_validInput() throws Exception {
+        Storyboard storyboard = new Storyboard();
 
+        mockMvc.perform(post("/greenhouse/storyboard/{storyboardId}/update", 1L)
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(storyboard)))
+                .andExpect(status().isOk());
     }
 
     @Test
     void updateStoryboard_validInput_mapsToBusinessLogic() throws Exception {
+        Storyboard storyboard = new Storyboard();
+        storyboard.setId(1234321);
+        storyboard.setSummary("summary");
+        Plant plant = new Plant();
+        plant.setName("plant");
+        storyboard.setPlant(plant);
 
+        mockMvc.perform(post("/greenhouse/storyboard/{storyboardId}/update", storyboard.getId())
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(storyboard)))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<StoryboardDPO> argumentCaptor = ArgumentCaptor.forClass(StoryboardDPO.class);
+        verify(storyboardService, times(1)).updateStoryboard(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue().getId()).isEqualTo(storyboard.getId());
+        assertThat(argumentCaptor.getValue().getSummary()).isEqualTo(storyboard.getSummary());
+        assertThat(argumentCaptor.getValue().getPlant()).isEqualTo(storyboard.getPlant());
     }
 
     @Test
     void updateStoryboard_validInput_returnsApiResponse() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(post("/greenhouse/storyboard/1/update")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(new Storyboard())))
+                .andExpect(status().isOk())
+                .andReturn();
 
+        ApiResponse expectedResponse = new ApiResponse(true, "Storyboard updated");
+        String actualResponse = mvcResult.getResponse().getContentAsString();
+        assertThat(objectMapper.writeValueAsString(expectedResponse)).isEqualToIgnoringWhitespace(actualResponse);
+    }
+
+    @Test
+    void updateStoryboard_notFound_returnsApiResponse() throws Exception {
+        when(storyboardService.updateStoryboard(any(StoryboardDPO.class))).thenThrow(new ActorNotFoundException("not found"));
+
+        MvcResult mvcResult = mockMvc.perform(post("/greenhouse/storyboard/1/update")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(new Storyboard())))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ApiResponse expectedResponse = new ApiResponse(false, "not found");
+        String actualResponse = mvcResult.getResponse().getContentAsString();
+        assertThat(objectMapper.writeValueAsString(expectedResponse)).isEqualToIgnoringWhitespace(actualResponse);
+    }
+
+    @Test
+    void updateStoryboard_throwsException_returnsApiResponse() throws Exception {
+        when(storyboardService.updateStoryboard(any(StoryboardDPO.class))).thenThrow(new ActorNotFoundException("hibernate error"));
+
+        MvcResult mvcResult = mockMvc.perform(post("/greenhouse/storyboard/1/update")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(new Storyboard())))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ApiResponse expectedResponse = new ApiResponse(false, "hibernate error");
+        String actualResponse = mvcResult.getResponse().getContentAsString();
+        assertThat(objectMapper.writeValueAsString(expectedResponse)).isEqualToIgnoringWhitespace(actualResponse);
     }
 
     @Test
     void updateStoryboard_invalidInput() throws Exception {
-
+        mockMvc.perform(post("/greenhouse/storyboard/1/update")
+                .contentType("application/json"))
+                .andExpect(status().isBadRequest());
     }
 
     // removeStoryboard
     @Test
     void removeStoryboard_validInput() throws Exception {
-
+        mockMvc.perform(get("/greenhouse/storyboard/1/remove"))
+                .andExpect(status().isOk());
     }
 
     @Test
     void removeStoryboard_validInput_mapsToBusinessLogic() throws Exception {
+        long storyboardId = ((Double) (Math.PI * 100)).longValue();
+        mockMvc.perform(get("/greenhouse/storyboard/{storyboardId}/remove", storyboardId))
+                .andExpect(status().isOk());
 
+        ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
+        verify(storyboardService, times(1)).removeStoryboard(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue()).isEqualTo(storyboardId);
     }
 
     @Test
     void removeStoryboard_validInput_returnsApiResponse() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(get("/greenhouse/storyboard/1/remove"))
+                .andExpect(status().isOk())
+                .andReturn();
 
+        ApiResponse expectedResponse = new ApiResponse(true, "Storyboard removed");
+        String actualResponse = mvcResult.getResponse().getContentAsString();
+        assertThat(objectMapper.writeValueAsString(expectedResponse)).isEqualToIgnoringWhitespace(actualResponse);
+    }
+
+    @Test
+    void removeStoryboard_notFound_returnsApiResponse() throws Exception {
+        doThrow(new ActorNotFoundException("not found")).when(storyboardService).removeStoryboard(any(Long.class));
+
+        MvcResult mvcResult = mockMvc.perform(get("/greenhouse/storyboard/1/remove"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ApiResponse expectedResponse = new ApiResponse(false, "not found");
+        String actualResponse = mvcResult.getResponse().getContentAsString();
+        assertThat(objectMapper.writeValueAsString(expectedResponse)).isEqualToIgnoringWhitespace(actualResponse);
+    }
+
+    @Test
+    void removeStoryboard_throwsException_returnsApiResponse() throws Exception {
+        doThrow(new HibernateException("hibernate exception")).when(storyboardService).removeStoryboard(any(Long.class));
+
+        MvcResult mvcResult = mockMvc.perform(get("/greenhouse/storyboard/1/remove"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ApiResponse expectedResponse = new ApiResponse(false, "Could not delete storyboard: hibernate exception");
+        String actualResponse = mvcResult.getResponse().getContentAsString();
+        assertThat(objectMapper.writeValueAsString(expectedResponse)).isEqualToIgnoringWhitespace(actualResponse);
     }
 
     @Test
     void removeStoryboard_invalidInput() throws Exception {
+         mockMvc.perform(get("/greenhouse/storyboard/notanumber/remove"))
+                .andExpect(status().isBadRequest());
+    }
+
+    // addStoryboardItem(StoryboardItem)
+
+    @Test
+    void addStoryboardItem_validInput() throws Exception {
+        StoryboardItem item = new StoryboardItem();
+        mockMvc.perform(post("/greenhouse/storyboard/1/item/add")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(item)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void addStoryboardItem_validInput_mapsToBusinessLogic() throws Exception {
+
+        long storyboardId = 1234;
+        StoryboardItem storyboardItem = new StoryboardItem();
+        storyboardItem.setTitle("title");
+        storyboardItem.setStatus(Plant.PlantHealthStatus.HEALTHY);
+        storyboardItem.setDescription("description");
+        storyboardItem.setImage("image");
+        storyboardItem.setThumbImage("thumb");
+
+        StoryboardDPO storyboardDPO = new StoryboardDPO();
+        storyboardDPO.setId(storyboardId);
+
+        when(storyboardService.findById(any(Long.class))).thenReturn(storyboardDPO);
+
+        mockMvc.perform(post("/greenhouse/storyboard/{storyboardId}/item/add", storyboardId)
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(storyboardItem)))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<StoryboardItemDPO> argumentCaptor = ArgumentCaptor.forClass(StoryboardItemDPO.class);
+        verify(storyboardItemService, times(1)).addStoryboardItem(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue().getStoryboard().getId()).isEqualTo(storyboardId);
+        assertThat(argumentCaptor.getValue().getTitle()).isEqualTo(storyboardItem.getTitle());
+        assertThat(argumentCaptor.getValue().getStatus()).isEqualTo(storyboardItem.getStatus());
+        assertThat(argumentCaptor.getValue().getDescription()).isEqualTo(storyboardItem.getDescription());
+        assertThat(argumentCaptor.getValue().getImage()).isEqualTo(storyboardItem.getImage());
+        assertThat(argumentCaptor.getValue().getThumbImage()).isEqualTo(storyboardItem.getThumbImage());
+    }
+
+    @Test
+    void addStoryboardItem_validInput_returnsApiResponse() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(post("/greenhouse/storyboard/1/item/add")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(new StoryboardItem())))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ApiResponse expectedResponse = new ApiResponse(true, "Item added");
+        String actualResponse = mvcResult.getResponse().getContentAsString();
+        assertThat(objectMapper.writeValueAsString(expectedResponse)).isEqualToIgnoringWhitespace(actualResponse);
+    }
+
+    @Test
+    void addStoryboardItem_notFound_returnsApiResponse() throws Exception {
+        when(storyboardItemService.addStoryboardItem(any(StoryboardItemDPO.class))).thenThrow(new ActorNotFoundException("not found"));
+
+        MvcResult mvcResult = mockMvc.perform(post("/greenhouse/storyboard/1/item/add")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(new StoryboardItem())))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ApiResponse expectedResponse = new ApiResponse(false, "not found");
+        String actualResponse = mvcResult.getResponse().getContentAsString();
+        assertThat(objectMapper.writeValueAsString(expectedResponse)).isEqualToIgnoringWhitespace(actualResponse);
 
     }
 
-    //TODO: decide whether to keep these controller methods
+    @Test
+    void addStoryboardItem_throwsException_returnsApiResponse() throws Exception {
+        when(storyboardItemService.addStoryboardItem(any(StoryboardItemDPO.class))).thenThrow(new HibernateException("hibernate error"));
 
-    // addStoryboardItem
+        MvcResult mvcResult = mockMvc.perform(post("/greenhouse/storyboard/1/item/add")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(new StoryboardItem())))
+                .andExpect(status().isOk())
+                .andReturn();
 
-    // removeStoryboardItem
+        ApiResponse expectedResponse = new ApiResponse(false, "Could not add item: hibernate error");
+        String actualResponse = mvcResult.getResponse().getContentAsString();
+        assertThat(objectMapper.writeValueAsString(expectedResponse)).isEqualToIgnoringWhitespace(actualResponse);
+    }
 
+    @Test
+    void addStoryboardItem_invalidInput() throws Exception {
+        mockMvc.perform(post("/greenhouse/storyboard/notnumber/item/add")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(new StoryboardItem())))
+                .andExpect(status().isBadRequest());
+    }
 }

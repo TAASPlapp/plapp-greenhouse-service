@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
@@ -48,7 +49,6 @@ public class MappersTest {
 
     @BeforeEach
     void initTest() {
-
         storyboardService = new StoryboardService(storyboardRepository);
         storyboardItemMapper = new StoryboardItemMapperImpl(storyboardService);
         storyboardMapper = new StoryboardMapperImpl(storyboardService, storyboardItemMapper);
@@ -59,14 +59,18 @@ public class MappersTest {
         StoryboardItem item = new StoryboardItem();
         item.setDescription("description");
         item.setStatus(Plant.PlantHealthStatus.HEALTHY);
+        item.setStoryboardId(1234);
 
-        when(storyboardService.findById(any(Long.class))).thenReturn(new StoryboardDPO());
+        StoryboardDPO storyboardDPO = new StoryboardDPO();
+        storyboardDPO.setId(1234);
+        when(storyboardRepository.findById(any(Long.class))).thenReturn(Optional.of(storyboardDPO));
 
         StoryboardItemDPO dpo = storyboardItemMapper
                 .storyboardItemToStoryboardItemDPO(item);
 
         assertThat(dpo.getDescription()).isEqualTo(item.getDescription());
         assertThat(dpo.getStatus()).isEqualTo(item.getStatus());
+        assertThat(dpo.getStoryboard().getId()).isEqualTo(item.getStoryboardId());
 
     }
 

@@ -120,7 +120,7 @@ public class GreenhouseController {
         } catch (HibernateException e) {
             return new ApiResponse(false, "Could not update storyboard: " + e.getMessage());
         }
-        return new ApiResponse();
+        return new ApiResponse(true, "Storyboard updated");
     }
 
     @GetMapping("/storyboard/{storyboardId}/remove")
@@ -133,7 +133,7 @@ public class GreenhouseController {
         } catch (HibernateException e) {
             return new ApiResponse(false, "Could not delete storyboard: " + e.getMessage());
         }
-        return new ApiResponse();
+        return new ApiResponse(true, "Storyboard removed");
     }
 
     @PostMapping("/storyboard/{storyboardId}/item/add")
@@ -149,7 +149,7 @@ public class GreenhouseController {
         } catch (HibernateException e) {
             return new ApiResponse(false, "Could not add item: " + e.getMessage());
         }
-        return new ApiResponse();
+        return new ApiResponse(true, "Item added");
     }
 
     @GetMapping("/storyboard/item/{itemId}/remove")

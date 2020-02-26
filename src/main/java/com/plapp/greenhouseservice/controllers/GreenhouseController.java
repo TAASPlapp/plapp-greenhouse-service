@@ -155,13 +155,12 @@ public class GreenhouseController {
     @GetMapping("/storyboard/item/{itemId}/remove")
     public ApiResponse removeStoryboardItem(@PathVariable(value="itemId") long itemId) {
         try {
-            StoryboardItemDPO itemDPO = storyboardItemService.findById(itemId);
-            storyboardItemService.removeStoryboardItem(itemDPO);
-        } catch (ActorNotFoundException | IllegalArgumentException e) {
+            storyboardItemService.removeStoryboardItemById(itemId);
+        } catch (ActorNotFoundException e) {
             return new ApiResponse(false, e.getMessage());
         } catch (HibernateException e) {
             return new ApiResponse(false, "Could not remove item:" + e.getMessage());
         }
-        return new ApiResponse();
+        return new ApiResponse(true, "Item removed");
     }
 }

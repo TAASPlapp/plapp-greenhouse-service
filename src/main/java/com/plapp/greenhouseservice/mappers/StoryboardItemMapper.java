@@ -24,6 +24,4 @@ public interface StoryboardItemMapper {
     @Mapping(source = "storyboard.id", target = "storyboardId")
     StoryboardItem storyboardItemDPOToStoryboardItem(StoryboardItemDPO storyboardItemDPO);
     List<StoryboardItem> storyboardItemDPOToStoryboardItem(List<StoryboardItemDPO> storyboardItemDPO);
-
-
 }

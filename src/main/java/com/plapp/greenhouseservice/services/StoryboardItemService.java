@@ -21,33 +21,13 @@ public class StoryboardItemService {
         if (item.getStoryboard() == null)
             throw new ActorNotFoundException("Storyboard does not exist");
 
-        //List<StoryboardItemDPO> items = storyboard.getStoryboardItems();
-        //if (items == null || items.size() < 1)
-        //    items = new ArrayList<>();
-        //items.add(item);
-
         return storyboardItemRepository.save(item);
     }
 
     public void removeStoryboardItem(StoryboardItemDPO item) throws HibernateException,
             ActorNotFoundException,
             IllegalArgumentException {
-        /*StoryboardDPO storyboard = storyboardRepository.findById(storyboardId).orElse(null);
-        if (storyboard == null)
-            throw new ActorNotFoundException("Storyboard does not exist");
 
-        List<StoryboardItemDPO> items = storyboard.getStoryboardItems();
-        if (items == null || items.size() < 1)
-            throw new IllegalArgumentException("Storyboard does not have any item");
-
-        List<StoryboardItemDPO> matching = Lists.filter(items, i -> i.getId() == itemId);
-        if (matching.size() < 1)
-            throw new ActorNotFoundException("Storyboard does not contain the specified item");
-
-        items.remove(matching.get(0));
-        storyboard.setStoryboardItems(items);
-
-        return this.createOrUpdateStoryboard(storyboard);*/
         storyboardItemRepository.delete(item);
     }
 }

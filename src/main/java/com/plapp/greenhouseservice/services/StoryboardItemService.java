@@ -25,9 +25,16 @@ public class StoryboardItemService {
     }
 
     public void removeStoryboardItem(StoryboardItemDPO item) throws HibernateException,
-            ActorNotFoundException,
             IllegalArgumentException {
-
         storyboardItemRepository.delete(item);
+    }
+
+    public void removeStoryboardItemById(long itemId) throws HibernateException,
+                                                             ActorNotFoundException {
+        StoryboardItemDPO itemDPO = findById(itemId);
+        if (itemDPO == null)
+            throw new ActorNotFoundException("Item not found");
+
+        this.removeStoryboardItem(itemDPO);
     }
 }

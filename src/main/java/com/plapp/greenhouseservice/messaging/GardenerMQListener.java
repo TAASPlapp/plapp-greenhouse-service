@@ -30,17 +30,17 @@ public class GardenerMQListener {
     private final ScheduleActionMapper scheduleActionMapper;
 
     @Bean
-    public Queue queue() {
+    public Queue gardenerQueue() {
         return new Queue(rabbitMQConfig.getGardenerQueueName(), false);
     }
 
     @Bean
-    TopicExchange exchange() {
+    TopicExchange gardenerExchange() {
         return new TopicExchange(rabbitMQConfig.getGardenerExchange());
     }
 
     @Bean
-    Binding binding(Queue queue, TopicExchange exchange) {
+    Binding gardenerBinding(Queue queue, TopicExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(rabbitMQConfig.getGardenerRoutingKey());
     }
 

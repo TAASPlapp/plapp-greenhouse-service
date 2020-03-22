@@ -8,14 +8,16 @@ import com.plapp.entities.utils.ApiResponse;
 import com.plapp.greenhouseservice.entities.StoryboardDPO;
 import com.plapp.greenhouseservice.entities.StoryboardItemDPO;
 import com.plapp.greenhouseservice.mappers.StoryboardItemMapper;
-import com.plapp.greenhouseservice.mappers.StoryboardItemMapperImpl;
 import com.plapp.greenhouseservice.mappers.StoryboardMapper;
-import com.plapp.greenhouseservice.mappers.StoryboardMapperImpl;
 import com.plapp.greenhouseservice.services.PlantService;
 import com.plapp.greenhouseservice.services.StoryboardItemService;
 import com.plapp.greenhouseservice.services.StoryboardService;
+import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,69 +25,55 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/greenhouse")
+@RequiredArgsConstructor
 public class GreenhouseController {
 
     private final PlantService plantService;
     private final StoryboardService storyboardService;
     private final StoryboardItemService storyboardItemService;
 
-    private StoryboardItemMapper storyboardItemMapper;
-    private StoryboardMapper storyboardMapper;
 
-    @Autowired
-    public GreenhouseController(PlantService plantService,
-                                StoryboardService storyboardService,
-                                StoryboardItemService storyboardItemService) {
-        this.plantService = plantService;
-        this.storyboardService = storyboardService;
-        this.storyboardItemService = storyboardItemService;
+    private final StoryboardItemMapper storyboardItemMapper;
+    private final StoryboardMapper storyboardMapper;
 
-        storyboardItemMapper = new StoryboardItemMapperImpl(storyboardService);
-        storyboardMapper = new StoryboardMapperImpl(storyboardService, storyboardItemMapper);
+    @ControllerAdvice
+    public static class GreenhouseControllerAdvice {
+        @ResponseStatus(HttpStatus.NOT_FOUND)
+        @ExceptionHandler({ActorNotFoundException.class})
+        public void handle(ActorNotFoundException e) {}
+
+        @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+        @ExceptionHandler({HibernateException.class})
+        public void handle() {}
     }
 
-
     @GetMapping("/{userId}/plants")
-    public List<Plant> getPlants(@PathVariable(value="userId") long userId) {
+    public List<Plant> getPlants(@PathVariable long userId) {
         return plantService.findByOwner(userId);
     }
 
     @GetMapping("/plant/{plantId}")
-    public Plant getPlant(@PathVariable(value="plantId") long plantId) {
+    public Plant getPlant(@PathVariable long plantId) {
         return plantService.getPlant(plantId);
     }
 
-    @PostMapping("/plant/add")
-    public ApiResponse addPlant(@RequestBody Plant plant) {
-        try {
-            plantService.addPlant(plant);
-        } catch (HibernateException e) {
-            return new ApiResponse(false, "Could not create entity: " + e.getMessage());
-        }
-
-        return new ApiResponse(true, "Plant created successfully");
+    @PostMapping("/{userId}/plants/add")
+    public Plant addPlant(@PathVariable long userId,
+                          @RequestBody Plant plant) {
+        plant.setOwner(userId);
+        return plantService.addPlant(plant);
     }
 
     @GetMapping("/plant/{plantId}/remove")
-    public ApiResponse removePlant(@PathVariable(value="plantId") long plantId) {
-        try {
-            plantService.removePlant(plantId);
-        } catch (ActorNotFoundException e) {
-            return new ApiResponse(false, e.getMessage());
-        } catch (HibernateException e) {
-            return new ApiResponse(false, "Could not remove plant: " + e.getMessage());
-        }
-
-        return new ApiResponse(true, "Plant removed");
+    public void removePlant(@PathVariable long plantId) throws ActorNotFoundException {
+        plantService.removePlant(plantId);
     }
 
     @GetMapping("/plant/{plantId}/storyboard")
-    public Storyboard getStoryboard(@PathVariable(value="plantId") long plantId) {
-       return storyboardMapper
-               .storyboardDPOToStoryboard(
-                       plantService.getStoryboardByPlantId(plantId)
-               );
-
+    public Storyboard getStoryboard(@PathVariable long plantId) {
+       return storyboardMapper.storyboardDPOToStoryboard(
+               plantService.getStoryboardByPlantId(plantId)
+       );
     }
 
     @GetMapping("/storyboards")
@@ -94,73 +82,44 @@ public class GreenhouseController {
                 .storyboardDPOToStoryboard(storyboardService.getAllStoryboards());
     }
 
-    @PostMapping("/storyboard/create")
-    public ApiResponse createStoryboard(@RequestBody Storyboard storyboard) {
-        try {
-            StoryboardDPO storyboardDPO = storyboardMapper
-                    .storyboardToStoryboardDPO(storyboard);
-            storyboardService.createStoryboard(storyboardDPO);
-        } catch (HibernateException e) {
-            return new ApiResponse(false, "Could not create storyboard: " + e.getMessage());
-        }
-
-        return new ApiResponse(true, "Storyboard created");
+    @PostMapping("/plant/{plantId}/storyboard/create")
+    public Storyboard createStoryboard(@PathVariable long plantId,
+                                       @RequestBody Storyboard storyboard) {
+        storyboard.setPlant(plantService.getPlant(plantId));
+        StoryboardDPO storyboardDPO = storyboardService.createStoryboard(
+                storyboardMapper.storyboardToStoryboardDPO(storyboard)
+        );
+        return storyboardMapper.storyboardDPOToStoryboard(storyboardDPO);
     }
 
     @PostMapping("/storyboard/{storyboardId}/update")
-    public ApiResponse updateStoryboard(@PathVariable(value="storyboardId") long storyboardId,
-                                        @RequestBody Storyboard storyboard) {
-        try {
-            storyboard.setId(storyboardId);
-            StoryboardDPO storyboardDPO = storyboardMapper
-                    .storyboardToStoryboardDPO(storyboard);
-            storyboardService.updateStoryboard(storyboardDPO);
-        }  catch (ActorNotFoundException e) {
-            return new ApiResponse(false, e.getMessage());
-        } catch (HibernateException e) {
-            return new ApiResponse(false, "Could not update storyboard: " + e.getMessage());
-        }
-        return new ApiResponse(true, "Storyboard updated");
+    public Storyboard updateStoryboard(@PathVariable long storyboardId,
+                                       @RequestBody Storyboard storyboard) throws ActorNotFoundException {
+        storyboard.setId(storyboardId);
+        StoryboardDPO storyboardDPO = storyboardService.updateStoryboard(
+                storyboardMapper.storyboardToStoryboardDPO(storyboard)
+        );
+        return storyboardMapper.storyboardDPOToStoryboard(storyboardDPO);
     }
 
     @GetMapping("/storyboard/{storyboardId}/remove")
     @Transactional
-    public ApiResponse removeStoryboard(@PathVariable(value="storyboardId") long storyboardId) {
-        try {
-            storyboardService.removeStoryboard(storyboardId);
-        } catch (ActorNotFoundException e) {
-            return new ApiResponse(false, e.getMessage());
-        } catch (HibernateException e) {
-            return new ApiResponse(false, "Could not delete storyboard: " + e.getMessage());
-        }
-        return new ApiResponse(true, "Storyboard removed");
+    public void removeStoryboard(@PathVariable long storyboardId) throws ActorNotFoundException {
+        storyboardService.removeStoryboard(storyboardId);
     }
 
     @PostMapping("/storyboard/{storyboardId}/item/add")
-    public ApiResponse addStoryboardItem(@PathVariable(value="storyboardId") long storyboardId,
-                                         @RequestBody StoryboardItem storyboardItem) {
+    public StoryboardItem addStoryboardItem(@PathVariable long storyboardId,
+                                            @RequestBody StoryboardItem storyboardItem) throws ActorNotFoundException {
         storyboardItem.setStoryboardId(storyboardId);
-        StoryboardItemDPO itemDPO = storyboardItemMapper.storyboardItemToStoryboardItemDPO(storyboardItem);
-
-        try {
-            storyboardItemService.addStoryboardItem(itemDPO);
-        } catch (ActorNotFoundException e) {
-            return new ApiResponse(false, e.getMessage());
-        } catch (HibernateException e) {
-            return new ApiResponse(false, "Could not add item: " + e.getMessage());
-        }
-        return new ApiResponse(true, "Item added");
+        StoryboardItemDPO itemDPO = storyboardItemService.addStoryboardItem(
+                storyboardItemMapper.storyboardItemToStoryboardItemDPO(storyboardItem)
+        );
+        return storyboardItemMapper.storyboardItemDPOToStoryboardItem(itemDPO);
     }
 
     @GetMapping("/storyboard/item/{itemId}/remove")
-    public ApiResponse removeStoryboardItem(@PathVariable(value="itemId") long itemId) {
-        try {
-            storyboardItemService.removeStoryboardItemById(itemId);
-        } catch (ActorNotFoundException e) {
-            return new ApiResponse(false, e.getMessage());
-        } catch (HibernateException e) {
-            return new ApiResponse(false, "Could not remove item:" + e.getMessage());
-        }
-        return new ApiResponse(true, "Item removed");
+    public void removeStoryboardItem(@PathVariable(value="itemId") long itemId) throws ActorNotFoundException {
+        storyboardItemService.removeStoryboardItemById(itemId);
     }
 }

@@ -33,6 +33,10 @@ public class NotificationServiceMQSender {
     }*/
 
     public void sendScheduleAction(ScheduleActionMQDTO scheduleActionMQDTO) {
-        //rabbitTemplate.convertAndSend(rabbitMQConfig.getNotificationExchange(), rabbitMQConfig.getNotificationRoutingKey(), scheduleActionMQDTO);
+        rabbitTemplate.convertAndSend(
+                rabbitMQConfig.getNotificationExchange(),
+                rabbitMQConfig.getNotificationRoutingKey(),
+                scheduleActionMQDTO
+        );
     }
 }

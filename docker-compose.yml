@@ -8,7 +8,7 @@ services:
     image: postgres:latest
     container_name: plapp-greenhouse-db
     ports:
-      - "5433:5432"
+      - "5434:5432"
     env_file:
       - postgres.env
     volumes:
@@ -23,8 +23,8 @@ services:
       - $PWD:$PWD
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.m2:/root/.m2
-    expose:
-      - "8080"
+    ports:
+      - "8084:8080"
     command: mvn spring-boot:run
     networks:
       - greenhouse-network

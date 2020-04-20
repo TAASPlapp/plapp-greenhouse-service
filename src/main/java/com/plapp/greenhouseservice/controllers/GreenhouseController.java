@@ -61,6 +61,9 @@ public class GreenhouseController {
     public Plant addPlant(@PathVariable long userId,
                           @RequestBody Plant plant) {
         plant.setOwner(userId);
+        Storyboard storyboard = new Storyboard();
+        storyboard.setPlant(plant);
+        storyboardService.createStoryboard(storyboardMapper.storyboardToStoryboardDPO(storyboard));
         return plantService.addPlant(plant);
     }
 

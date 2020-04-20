@@ -55,6 +55,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.github.TAASPlapp</groupId>
+            <artifactId>plapp-authorization-filter</artifactId>
+            <version>4746ebeb88</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.github.carloalbertobarbano</groupId>
             <artifactId>JListsUtils</artifactId>
             <version>4335e11fda</version>

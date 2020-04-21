@@ -1,9 +1,8 @@
 package com.plapp.greenhouseservice.mappers;
 
-import com.plapp.entities.messaging.ScheduleActionMQDTO;
-import com.plapp.entities.schedules.ScheduleAction;
+import com.plapp.entities.messaging.DiagnosisMQDTO;
+import com.plapp.entities.schedules.Diagnosis;
 import com.plapp.greenhouseservice.services.PlantService;
-import com.plapp.greenhouseservice.services.StoryboardService;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -11,7 +10,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring",
         uses = {PlantService.class},
         injectionStrategy = InjectionStrategy.CONSTRUCTOR)
-public interface ScheduleActionMapper {
+public interface DiagnosisMapper {
     @Mapping(target = "plant", source = "plantId")
-    ScheduleActionMQDTO scheduleActionToScheduleActionMQDTO(ScheduleAction scheduleAction);
+    DiagnosisMQDTO diagnosisToDiagnosisMQDTO(Diagnosis diagnosis);
 }

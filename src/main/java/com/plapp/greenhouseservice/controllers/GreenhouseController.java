@@ -61,7 +61,13 @@ public class GreenhouseController {
     public Plant addPlant(@PathVariable long userId,
                           @RequestBody Plant plant) {
         plant.setOwner(userId);
-        return plantService.addPlant(plant);
+        Plant addedPlant = plantService.addPlant(plant);
+
+        Storyboard storyboard = new Storyboard();
+        storyboard.setPlant(addedPlant);
+        storyboardService.createStoryboard(storyboardMapper.storyboardToStoryboardDPO(storyboard));
+
+        return addedPlant;
     }
 
     @GetMapping("/plant/{plantId}/remove")
@@ -80,6 +86,11 @@ public class GreenhouseController {
     public List<Storyboard> getStoryboards() {
         return storyboardMapper
                 .storyboardDPOToStoryboard(storyboardService.getAllStoryboards());
+    }
+
+    @GetMapping("/{userId}/storyboards")
+    public List<Storyboard> getStoryboardsByUser(@PathVariable long userId) {
+        return storyboardMapper.storyboardDPOToStoryboard(storyboardService.getUserStoryboards(userId));
     }
 
     @PostMapping("/plant/{plantId}/storyboard/create")

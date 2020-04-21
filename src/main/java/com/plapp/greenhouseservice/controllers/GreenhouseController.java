@@ -63,10 +63,6 @@ public class GreenhouseController {
         plant.setOwner(userId);
         Plant addedPlant = plantService.addPlant(plant);
 
-        Storyboard storyboard = new Storyboard();
-        storyboard.setPlant(addedPlant);
-        storyboardService.createStoryboard(storyboardMapper.storyboardToStoryboardDPO(storyboard));
-
         return addedPlant;
     }
 

@@ -85,6 +85,11 @@ public class GreenhouseController {
                 .storyboardDPOToStoryboard(storyboardService.getAllStoryboards());
     }
 
+    @GetMapping("/{userId}/storyboards")
+    public List<Storyboard> getStoryboardsByUser(@PathVariable long userId) {
+        return storyboardMapper.storyboardDPOToStoryboard(storyboardService.getUserStoryboards(userId));
+    }
+
     @PostMapping("/plant/{plantId}/storyboard/create")
     public Storyboard createStoryboard(@PathVariable long plantId,
                                        @RequestBody Storyboard storyboard) {

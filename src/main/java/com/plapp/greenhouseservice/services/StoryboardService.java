@@ -22,6 +22,8 @@ public class StoryboardService {
         return storyboardRepository.findAll();
     }
 
+    public List<StoryboardDPO> getUserStoryboards(long userId) { return storyboardRepository.findAllByPlantOwner(userId); }
+
     public StoryboardDPO createStoryboard(StoryboardDPO storyboard) throws HibernateException {
         return storyboardRepository.save(storyboard);
     }

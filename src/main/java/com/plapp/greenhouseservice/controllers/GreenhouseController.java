@@ -61,10 +61,13 @@ public class GreenhouseController {
     public Plant addPlant(@PathVariable long userId,
                           @RequestBody Plant plant) {
         plant.setOwner(userId);
+        Plant addedPlant = plantService.addPlant(plant);
+
         Storyboard storyboard = new Storyboard();
-        storyboard.setPlant(plant);
+        storyboard.setPlant(addedPlant);
         storyboardService.createStoryboard(storyboardMapper.storyboardToStoryboardDPO(storyboard));
-        return plantService.addPlant(plant);
+
+        return addedPlant;
     }
 
     @GetMapping("/plant/{plantId}/remove")

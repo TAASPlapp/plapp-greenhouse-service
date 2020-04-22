@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class NotificationServiceMQSender {
     private final RabbitMQConfig rabbitMQConfig;
-    private final AmqpTemplate rabbitTemplate;
+    private final RabbitTemplate rabbitTemplate;
     private final Logger logger = LoggerFactory.getLogger(NotificationServiceMQSender.class);
 
     @Bean
@@ -36,6 +37,8 @@ public class NotificationServiceMQSender {
     }
 
     public void sendScheduleAction(ScheduleActionMQDTO scheduleActionMQDTO) {
+        rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
+
         logger.info("Sending ScheduleAction to notification service: " + scheduleActionMQDTO);
         rabbitTemplate.convertAndSend(
                 rabbitMQConfig.getNotificationExchange(),
@@ -46,6 +49,7 @@ public class NotificationServiceMQSender {
     }
 
     public void sendDiagnosis(DiagnosisMQDTO diagnosisMQDTO) {
+        rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
         logger.info("Sending Diagnosis to notification service: " +diagnosisMQDTO);
         rabbitTemplate.convertAndSend(
                 rabbitMQConfig.getNotificationExchange(),

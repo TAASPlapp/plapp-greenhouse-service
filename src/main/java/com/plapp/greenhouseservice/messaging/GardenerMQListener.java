@@ -48,6 +48,7 @@ public class GardenerMQListener {
         return BindingBuilder.bind(queue).to(exchange).with(rabbitMQConfig.getGardenerRoutingKey());
     }
 
+
     @RabbitListener(queues = "${mq.gardener.queue}")
     public void receiveMessage(final Message message) throws JsonProcessingException  {
         String body = new String(message.getBody());

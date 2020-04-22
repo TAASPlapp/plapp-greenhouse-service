@@ -13,11 +13,7 @@ public class NotificationService {
 
     private final NotificationServiceMQSender notificationServiceMQSender;
 
-    public void notifyPendingScheduleAction(ScheduleActionMQDTO scheduleAction) throws ActorNotFoundException {
-        //if (scheduleAction.getPlant() == null)
-        //    throw new ActorNotFoundException("Plant does not exist");
-
-        // TODO: send notification to notification service MQ
+    public void notifyPendingScheduleAction(ScheduleActionMQDTO scheduleAction) {
         notificationServiceMQSender.sendScheduleAction(scheduleAction);
     }
 

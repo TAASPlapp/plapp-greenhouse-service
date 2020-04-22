@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 public class GardenerMQListener {
     private final RabbitMQConfig rabbitMQConfig;
 
-    private final PlantService plantService;
     private final NotificationService notificationService;
 
     private final ScheduleActionMapper scheduleActionMapper;
@@ -48,6 +47,7 @@ public class GardenerMQListener {
     Binding gardenerBinding(@Qualifier("gardenerQueue") Queue queue, @Qualifier("gardenerExchange") TopicExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(rabbitMQConfig.getGardenerRoutingKey());
     }
+
 
     @RabbitListener(queues = "${mq.gardener.queue}")
     public void receiveMessage(final Message message) throws JsonProcessingException  {

@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -63,6 +64,7 @@ public class GardenerMQListener {
     }
 
 
+    @Transactional
     @RabbitListener(queues = "${mq.gardener.queue}")
     public void receiveMessage(final Message message) throws JsonProcessingException  {
         String body = new String(message.getBody());

@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 public class GardenerMQListener {
     private final RabbitMQConfig rabbitMQConfig;
 
-    private final PlantService plantService;
     private final NotificationService notificationService;
 
     private final ScheduleActionMapper scheduleActionMapper;
